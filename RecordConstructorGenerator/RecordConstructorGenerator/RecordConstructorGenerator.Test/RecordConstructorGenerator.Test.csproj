@@ -104,12 +104,17 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics1\Source.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Source.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics2\Source.cs" />
     <Compile Include="Verifiers\CodeFixVerifier.cs" />
+    <Compile Include="Verifiers\ContractCodeFixVerifier.cs" />
     <Compile Include="Verifiers\DiagnosticVerifier.cs" />
     <Compile Include="Helpers\CodeFixVerifier.Helper.cs" />
     <Compile Include="Helpers\DiagnosticResult.cs" />
     <Compile Include="Helpers\DiagnosticVerifier.Helper.cs" />
-    <Compile Include="UnitTests.cs" />
+    <Compile Include="RecordConstructorGeneratorUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +125,9 @@
       <Project>{C2C19EE1-120A-42A7-B9DD-DC8FA481E7EE}</Project>
       <Name>RecordConstructorGenerator</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
