@@ -15,18 +15,14 @@
         /// </summary>
         public int Y { get; }
 
-        #region Record Constructor
-
         /// <summary>
-        /// 
+        /// Record Constructor
         /// </summary>
         /// <param name="x"></param>
         public Point(int x = default(int))
         {
             X = x;
         }
-
-        #endregion
 
         public int A { get { return X * Y; } }
         public int B => X * Y;

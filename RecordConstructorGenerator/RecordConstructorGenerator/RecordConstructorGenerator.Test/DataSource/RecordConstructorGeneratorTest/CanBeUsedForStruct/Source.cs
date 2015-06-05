@@ -1,9 +1,7 @@
 ﻿namespace RecordConstructorGenerator.Test
 {
-    class Point
+    public struct Point
     {
-        public string Name { get; }
-
         /// <summary>
         /// x coordinate.
         /// </summary>

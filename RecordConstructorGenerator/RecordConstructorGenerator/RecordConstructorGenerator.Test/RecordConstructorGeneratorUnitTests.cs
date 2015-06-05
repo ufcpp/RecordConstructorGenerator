@@ -18,14 +18,22 @@ namespace RecordConstructorGenerator.Test
         }
 
         [TestMethod]
-        public void TypicalUsage() => VerifyDiagnostic(new[]
+        public void TypicalUsage() => VerifyCodeFix(new[]
+        {
+            NoRecordConstructorResult(5, 9),
+            NoRecordConstructorResult(10, 9),
+            NoRecordConstructorResult(15, 9),
+        });
+
+        [TestMethod]
+        public void AddNewProperty() => VerifyCodeFix(NoAssignmentInRecordConstructorResult("Y", 16, 9));
+
+        [TestMethod]
+        public void CanBeUsedForStruct() => VerifyCodeFix(new[]
         {
             NoRecordConstructorResult(8, 9),
             NoRecordConstructorResult(13, 9),
         });
-
-        [TestMethod]
-        public void AddNewProperty() => VerifyDiagnostic(NoAssignmentInRecordConstructorResult("Y", 16, 9));
 
         protected override CodeFixProvider GetCSharpCodeFixProvider() => new RecordConstructorGeneratorCodeFixProvider();
 

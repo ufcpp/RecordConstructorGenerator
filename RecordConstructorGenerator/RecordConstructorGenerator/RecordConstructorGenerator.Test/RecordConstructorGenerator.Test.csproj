@@ -108,6 +108,10 @@
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Source.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics2\Source.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\NewSource.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\NewSource.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\NewSource.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Source.cs" />
     <Compile Include="Verifiers\CodeFixVerifier.cs" />
     <Compile Include="Verifiers\ContractCodeFixVerifier.cs" />
     <Compile Include="Verifiers\DiagnosticVerifier.cs" />

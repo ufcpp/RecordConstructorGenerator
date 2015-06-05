@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -8,14 +9,15 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Rename;
+using Microsoft.CodeAnalysis.Formatting;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace RecordConstructorGenerator
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RecordConstructorGeneratorCodeFixProvider)), Shared]
     public class RecordConstructorGeneratorCodeFixProvider : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(NoRecordConstructor.DiagnosticId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(NoRecordConstructor.DiagnosticId, NoAssignmentInRecordConstructor.DiagnosticId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -32,27 +34,64 @@ namespace RecordConstructorGenerator
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
-                CodeAction.Create("Make uppercase", c => MakeUppercaseAsync(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor", c => MakeUppercaseAsync(context.Document, declaration, c)),
                 diagnostic);
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private static readonly SyntaxTriviaList EmptyTrivia = TriviaList();
+        private static readonly SyntaxToken PublicToken = Token(SyntaxKind.PublicKeyword);
+
+        private ConstructorDeclarationSyntax GenerateConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames)
         {
-            // Compute new uppercase name.
-            var identifierToken = typeDecl.Identifier;
-            var newName = identifierToken.Text.ToUpperInvariant();
+            var props = propertyNames.Select(p => new Property(p)).ToArray();
 
-            // Get the symbol representing the type to be renamed.
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
+            var docComment = GenerateDocComment(props.Select(p => p.Name));
+            var parameterList = ParameterList().AddParameters(props.Select(p => p.ToParameter()).ToArray());
+            var body = Block().AddStatements(props.Select(p => p.ToAssignment()).ToArray());
 
-            // Produce a new solution that has all references to that type renamed, including the declaration.
-            var originalSolution = document.Project.Solution;
-            var optionSet = originalSolution.Workspace.Options;
-            var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newName, optionSet, cancellationToken).ConfigureAwait(false);
+            return ConstructorDeclaration(typeName)
+                .WithModifiers(SyntaxTokenList.Create(PublicToken))
+                .WithParameterList(parameterList)
+                .WithLeadingTrivia(docComment)
+                .WithBody(body)
+                .WithAdditionalAnnotations(Formatter.Annotation);
+        }
 
-            // Return the new solution with the now-uppercase type name.
-            return newSolution;
+        private static SyntaxTriviaList GenerateDocComment(IEnumerable<IdentifierName> props)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine();
+            sb.AppendLine("/// <summary>" + SyntaxExtensions.RecordComment + "</summary>");
+            foreach (var p in props)
+                sb.AppendLine($"/// <param name=\"{p.Lower}\"><see cref=\"{p.Upper}\"/></param>");
+
+            var docComment = ParseLeadingTrivia(sb.ToString());
+            return docComment;
+        }
+
+        private async Task<Document> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
+            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+
+            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
+            var recordCtor = typeDecl.GetRecordConstructor();
+            TypeDeclarationSyntax newDecl;
+
+            if (recordCtor != null)
+            {
+                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+                newDecl = typeDecl.ReplaceNode(recordCtor, newCtor);
+            }
+            else
+            {
+                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+                newDecl = typeDecl.InsertNodesAfter(typeDecl.Members.Last(), new[] { newCtor });
+            }
+
+            var newRoolt = root.ReplaceNode(typeDecl, newDecl)
+                .WithAdditionalAnnotations(Formatter.Annotation);
+
+            return document.WithSyntaxRoot(newRoolt);
         }
     }
 }

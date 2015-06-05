@@ -50,12 +50,7 @@ namespace RecordConstructorGenerator
 
             var ps = (PropertyDeclarationSyntax)p.DeclaringSyntaxReferences.First().GetSyntax();
 
-            var accessor = ps.AccessorList?.Accessors.SingleOrDefault();
-
-            if (accessor == null
-                || !accessor.Keyword.IsKind(SyntaxKind.GetKeyword)
-                || accessor.Body != null)
-                return;
+            if (!ps.IsGetOnlyAuto()) return;
 
             //get-only auto-properties
 
