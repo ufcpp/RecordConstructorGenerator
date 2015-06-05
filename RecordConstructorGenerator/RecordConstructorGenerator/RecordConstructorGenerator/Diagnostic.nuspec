@@ -4,16 +4,15 @@
     <id>RecordConstructorGenerator</id>
     <version>1.0.0.0</version>
     <title>RecordConstructorGenerator</title>
-    <authors>RecordConstructorGenerator</authors>
-    <owners>RecordConstructorGenerator</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+    <authors>Nobuyuki Iwanaga</authors>
+    <owners>Nobuyuki Iwanaga</owners>
+    <licenseUrl>https://github.com/ufcpp/RecordConstructorGenerator/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ufcpp/RecordConstructorGenerator/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>RecordConstructorGenerator</description>
-    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
-    <copyright>Copyright</copyright>
-    <tags>RecordConstructorGenerator, analyzers</tags>
+    <description>Code Fix for a record (immutable class/struct) constructor generated from get-only properties</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Nobuyuki Iwanaga</copyright>
+    <tags>record type, immutable type, code generator, analyzers</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />
     </frameworkAssemblies>
