@@ -14,6 +14,7 @@ This inlcudes VSIX and NuGet packages of an analyzer created by using .NET Compi
 
 original source:
 
+```cs
     class Point
     {
         public string Name { get; }
@@ -30,9 +31,11 @@ original source:
 
         public int A => X * Y;
     }
+```
 
 the generated result:
 
+```cs
     class Point
     {
         public string Name { get; }
@@ -60,4 +63,4 @@ the generated result:
             Y = y;
         }
     }
-
+```
