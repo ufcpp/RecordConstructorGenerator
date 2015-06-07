@@ -18,47 +18,16 @@ namespace RecordConstructorGenerator.Test
         }
 
         [TestMethod]
-        public void TypicalUsage() => VerifyCodeFix(new[]
-        {
-            NoRecordConstructorResult(5, 9),
-            NoRecordConstructorResult(10, 9),
-            NoRecordConstructorResult(15, 9),
-        });
+        public void TypicalUsage() => VerifyCodeFix();
 
         [TestMethod]
-        public void AddNewProperty() => VerifyCodeFix(NoAssignmentInRecordConstructorResult("Y", 16, 9));
+        public void AddNewProperty() => VerifyCodeFix();
 
         [TestMethod]
-        public void CanBeUsedForStruct() => VerifyCodeFix(new[]
-        {
-            NoRecordConstructorResult(8, 9),
-            NoRecordConstructorResult(13, 9),
-        });
+        public void CanBeUsedForStruct() => VerifyCodeFix();
 
         protected override CodeFixProvider GetCSharpCodeFixProvider() => new RecordConstructorGeneratorCodeFixProvider();
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new RecordConstructorGeneratorAnalyzer();
-
-        private DiagnosticResult NoRecordConstructorResult(DiagnosticResultLocation location) => new DiagnosticResult
-        {
-            Id = NoRecordConstructor.DiagnosticId,
-            Message = NoRecordConstructor.MessageFormat.ToString(),
-            Severity = DiagnosticSeverity.Info,
-            Locations = new[] { location }
-        };
-
-        private DiagnosticResult NoRecordConstructorResult(int line, int column)
-            => NoRecordConstructorResult(new DiagnosticResultLocation("Test0.cs", line, column));
-
-        private DiagnosticResult NoAssignmentInRecordConstructorResult(string propertyName, DiagnosticResultLocation location) => new DiagnosticResult
-        {
-            Id = NoAssignmentInRecordConstructor.DiagnosticId,
-            Message = string.Format(NoAssignmentInRecordConstructor.MessageFormat.ToString(), propertyName),
-            Severity = DiagnosticSeverity.Info,
-            Locations = new[] { location }
-        };
-
-        private DiagnosticResult NoAssignmentInRecordConstructorResult(string propertyName, int line, int column)
-            => NoAssignmentInRecordConstructorResult(propertyName, new DiagnosticResultLocation("Test0.cs", line, column));
     }
 }

@@ -104,7 +104,10 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Results.csv" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Results.csv" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics1\Source.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Results.csv" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Source.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics2\Source.cs" />
