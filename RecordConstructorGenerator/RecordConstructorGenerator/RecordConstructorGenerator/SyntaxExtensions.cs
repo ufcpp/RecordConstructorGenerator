@@ -28,6 +28,8 @@ namespace RecordConstructorGenerator
                 && accessor.Body == null
                 && p.Initializer == null;
         }
+
+
     }
 
     public class Property

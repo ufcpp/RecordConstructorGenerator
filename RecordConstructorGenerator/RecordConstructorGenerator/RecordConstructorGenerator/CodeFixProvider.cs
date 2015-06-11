@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -34,7 +35,7 @@ namespace RecordConstructorGenerator
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
-                CodeAction.Create("Generate record constructor", c => MakeUppercaseAsync(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor", c => GenerateCode(context.Document, declaration, c)),
                 diagnostic);
         }
 
@@ -69,29 +70,103 @@ namespace RecordConstructorGenerator
             return docComment;
         }
 
-        private async Task<Document> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Solution> GenerateCode(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
+            //todo: 元の型に partial 足す
+            //todo: ファイルを生成する場合のテスト
+            //todo: 2重生成防止がちゃんと動いてない
+
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
 
             var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
-            var recordCtor = typeDecl.GetRecordConstructor();
-            TypeDeclarationSyntax newDecl;
+            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
 
-            if (recordCtor != null)
+            var name = typeDecl.Identifier.Text;
+            TypeDeclarationSyntax newTypeDecl;
+            if (typeDecl.IsKind(SyntaxKind.ClassDeclaration))
             {
-                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
-                newDecl = typeDecl.ReplaceNode(recordCtor, newCtor);
+                var classDecl = CSharpSyntaxTree.ParseText($@"
+partial class {name}
+{{
+}}
+").GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().First();
+                newTypeDecl = classDecl
+                    .AddMembers(newCtor);
             }
             else
             {
-                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
-                newDecl = typeDecl.InsertNodesAfter(typeDecl.Members.Last(), new[] { newCtor });
+                var structDecl = CSharpSyntaxTree.ParseText($@"
+partial struct {name}
+{{
+}}
+").GetRoot().ChildNodes().OfType<StructDeclarationSyntax>().First();
+                newTypeDecl = structDecl
+                    .AddMembers(newCtor);
             }
 
-            var newRoolt = root.ReplaceNode(typeDecl, newDecl)
+            var ns = typeDecl.FirstAncestorOrSelf<NamespaceDeclarationSyntax>()?.Name.GetText().ToString();
+
+            MemberDeclarationSyntax topDecl;
+            if (ns != null)
+            {
+                topDecl = NamespaceDeclaration(IdentifierName(ns))
+                    .AddMembers(newTypeDecl);
+            }
+            else
+            {
+                topDecl = newTypeDecl;
+            }
+
+            var newRoot = CompilationUnit().AddUsings(root.Usings.ToArray())
+                .AddMembers(topDecl)
                 .WithAdditionalAnnotations(Formatter.Annotation);
 
-            return document.WithSyntaxRoot(newRoolt);
+            //var newTypeDecl = 
+
+            //typeDecl is ClassDeclarationSyntax ? ClassDeclaration(
+
+            //var ns = typeDecl.FirstAncestorOrSelf<NamespaceDeclarationSyntax>();
+
+            //if (ns == null)
+            //{
+            //}
+            //else
+            //{
+            //}
+
+            //var model = await document.GetSemanticModelAsync();
+
+            //var t1 = model.GetSymbolInfo(typeDecl);
+
+
+            //var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
+            //var recordCtor = typeDecl.GetRecordConstructor();
+            //TypeDeclarationSyntax newDecl;
+
+            //if (recordCtor != null)
+            //{
+            //    var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+            //    newDecl = typeDecl.ReplaceNode(recordCtor, newCtor);
+            //}
+            //else
+            //{
+            //    var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+            //    newDecl = typeDecl.InsertNodesAfter(typeDecl.Members.Last(), new[] { newCtor });
+            //}
+
+            //var newRoolt = root.ReplaceNode(typeDecl, newDecl)
+            //    .WithAdditionalAnnotations(Formatter.Annotation);
+
+            var generatedName = name + ".RecordConstructor.cs";
+
+            var existed = document.Project.Documents.FirstOrDefault(d => d.Name == generatedName);
+            if (existed != null)
+                document.Project.RemoveDocument(existed.Id);
+
+            var newDocument = document.Project.AddDocument(generatedName, newRoot, document.Folders);
+            return newDocument.Project.Solution;
         }
+
+        private static Regex _regCsExt = new Regex(@"\.cs$");
     }
 }
