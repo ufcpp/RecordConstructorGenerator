@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
+﻿using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestHelper;
@@ -7,24 +6,24 @@ using TestHelper;
 namespace RecordConstructorGenerator.Test
 {
     [TestClass]
-    public class RecordConstructorGeneratorTest : ContractCodeFixVerifier
+    public class RecordConstructorGeneratorTest : ConventionCodeFixVerifier
     {
 
         [TestMethod]
         public void NoDiagnostics()
         {
-            VerifyDiagnostic("NoDiagnostics1");
-            VerifyDiagnostic("NoDiagnostics2");
+            VerifyCSharpByConvention("NoDiagnostics1");
+            VerifyCSharpByConvention("NoDiagnostics2");
         }
 
         [TestMethod]
-        public void TypicalUsage() => VerifyCodeFix();
+        public void TypicalUsage() => VerifyCSharpByConvention();
 
         [TestMethod]
-        public void AddNewProperty() => VerifyCodeFix();
+        public void AddNewProperty() => VerifyCSharpByConvention();
 
         [TestMethod]
-        public void CanBeUsedForStruct() => VerifyCodeFix();
+        public void CanBeUsedForStruct() => VerifyCSharpByConvention();
 
         protected override CodeFixProvider GetCSharpCodeFixProvider() => new RecordConstructorGeneratorCodeFixProvider();
 

@@ -1,0 +1,14 @@
+﻿[
+    {
+        "id": "NoRecordConstructor",
+        "sevirity": "Info",
+        "line": 8,
+        "column": 9
+    },
+    {
+        "id": "NoRecordConstructor",
+        "sevirity": "Info",
+        "line": 13,
+        "column": 9
+    }
+]

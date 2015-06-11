@@ -1,0 +1,9 @@
+﻿[
+    {
+        "id": "NoAssignmentInRecordConstructor",
+        "sevirity": "Info",
+        "line": 16,
+        "column": 9,
+        "message-args": [ "Y" ]
+    }
+]
