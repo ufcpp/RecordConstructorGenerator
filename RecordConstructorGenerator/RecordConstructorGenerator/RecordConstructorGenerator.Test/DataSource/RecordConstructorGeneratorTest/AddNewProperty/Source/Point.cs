@@ -1,6 +1,6 @@
 ﻿namespace RecordConstructorGenerator.Test
 {
-    class Point
+    public partial class Point
     {
         public string Name { get; }
 

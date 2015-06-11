@@ -1,0 +1,23 @@
+﻿[
+    {
+        "id": "NoRecordConstructor",
+        "sevirity": "Info",
+        "line": 5,
+        "column": 9,
+        "path": "Point.cs"
+    },
+    {
+        "id": "NoRecordConstructor",
+        "sevirity": "Info",
+        "line": 10,
+        "column": 9,
+        "path": "Point.cs"
+    },
+    {
+        "id": "NoRecordConstructor",
+        "sevirity": "Info",
+        "line": 15,
+        "column": 9,
+        "path": "Point.cs"
+    }
+]

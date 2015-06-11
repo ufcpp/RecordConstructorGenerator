@@ -28,6 +28,54 @@ namespace RecordConstructorGenerator
                 && accessor.Body == null
                 && p.Initializer == null;
         }
+
+        public static TypeDeclarationSyntax GetPartialTypeDelaration(this TypeDeclarationSyntax typeDecl)
+        {
+            var name = typeDecl.Identifier.Text;
+
+            if (typeDecl.IsKind(SyntaxKind.ClassDeclaration))
+            {
+                return CSharpSyntaxTree.ParseText($@"
+partial class {name}
+{{
+}}
+").GetRoot().ChildNodes().OfType<ClassDeclarationSyntax>().First();
+            }
+            else
+            {
+                return CSharpSyntaxTree.ParseText($@"
+partial struct {name}
+{{
+}}
+").GetRoot().ChildNodes().OfType<StructDeclarationSyntax>().First();
+            }
+        }
+
+        public static TypeDeclarationSyntax AddMembers(this TypeDeclarationSyntax typeDecl, params MemberDeclarationSyntax[] members)
+        {
+            if (typeDecl.IsKind(SyntaxKind.ClassDeclaration))
+                return ((ClassDeclarationSyntax)typeDecl).AddMembers(members);
+            else
+                return ((StructDeclarationSyntax)typeDecl).AddMembers(members);
+        }
+
+        private static readonly SyntaxToken PartialToken = SyntaxFactory.Token(SyntaxKind.PartialKeyword);
+
+        public static TypeDeclarationSyntax AddPartialModifier(this TypeDeclarationSyntax typeDecl)
+        {
+            if (typeDecl.IsKind(SyntaxKind.ClassDeclaration))
+            {
+                var d = ((ClassDeclarationSyntax)typeDecl);
+                if (d.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return d;
+                return d.AddModifiers(new[] { PartialToken });
+            }
+            else
+            {
+                var d = ((StructDeclarationSyntax)typeDecl);
+                if (d.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return d;
+                return d.AddModifiers(new[] { PartialToken });
+            }
+        }
     }
 
     public class Property

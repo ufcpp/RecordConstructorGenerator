@@ -2,8 +2,9 @@
     {
         "id": "NoAssignmentInRecordConstructor",
         "sevirity": "Info",
-        "line": 16,
+        "line": 5,
         "column": 9,
-        "message-args": [ "Y" ]
+        "path":  "Point.cs",
+        "message-args": [ "Name" ]
     }
 ]

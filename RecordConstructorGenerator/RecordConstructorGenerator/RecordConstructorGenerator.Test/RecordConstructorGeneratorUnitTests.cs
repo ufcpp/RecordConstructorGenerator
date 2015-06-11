@@ -8,7 +8,6 @@ namespace RecordConstructorGenerator.Test
     [TestClass]
     public class RecordConstructorGeneratorTest : ConventionCodeFixVerifier
     {
-
         [TestMethod]
         public void NoDiagnostics()
         {

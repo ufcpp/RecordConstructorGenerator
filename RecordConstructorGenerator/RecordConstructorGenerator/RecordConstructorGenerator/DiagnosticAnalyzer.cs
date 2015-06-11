@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -41,7 +42,21 @@ namespace RecordConstructorGenerator
 
         public override void Initialize(AnalysisContext context)
         {
+            context.RegisterSyntaxNodeAction(AnalyzerSymbol, SyntaxKind.PropertyDeclaration);
             context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+        }
+
+        private void AnalyzerSymbol(SyntaxNodeAnalysisContext context)
+        {
+            var propDecl = (PropertyDeclarationSyntax)context.Node;
+
+            var typeDecl = propDecl.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+
+            var model = context.SemanticModel;
+
+            var asm = model.Compilation.Assembly;
+
+            var l = asm.Locations;
         }
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
@@ -52,19 +67,25 @@ namespace RecordConstructorGenerator
 
             if (!ps.IsGetOnlyAuto()) return;
 
-            //get-only auto-properties
-
             var ts = ps.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+
+            var name = ts.Identifier.Text + ".RecordConstructor.cs";
+            var generatedTree = context.Compilation.SyntaxTrees.FirstOrDefault(t => t.FilePath == name);
+
+            //no generated file
+            if (generatedTree == null) goto NO_RECORD_CTOR;
+
+            ts = generatedTree.GetRoot().DescendantNodes()
+                .OfType<TypeDeclarationSyntax>()
+                .FirstOrDefault();
+
+            //no generated file
+            if (ts == null) goto NO_RECORD_CTOR;
+
             var recordCtor = ts.GetRecordConstructor();
 
             //no record constructor
-
-            if (recordCtor == null)
-            {
-                var diagnostic = Diagnostic.Create(NoRecordConstructor.Rule, ps.GetLocation());
-                context.ReportDiagnostic(diagnostic);
-                return;
-            }
+            if (recordCtor == null) goto NO_RECORD_CTOR;
 
             var assignments = recordCtor.Body
                 .DescendantNodes(s => !s.IsKind(SyntaxKind.SimpleAssignmentExpression))
@@ -80,10 +101,17 @@ namespace RecordConstructorGenerator
             }
 
             //no assignment in the record constructor
-
             {
                 var diagnostic = Diagnostic.Create(NoAssignmentInRecordConstructor.Rule, ps.GetLocation(), p.Name);
                 context.ReportDiagnostic(diagnostic);
+                return;
+            }
+
+            NO_RECORD_CTOR:
+            {
+                var diagnostic = Diagnostic.Create(NoRecordConstructor.Rule, ps.GetLocation());
+                context.ReportDiagnostic(diagnostic);
+                return;
             }
         }
     }

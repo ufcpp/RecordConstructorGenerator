@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -34,14 +35,14 @@ namespace RecordConstructorGenerator
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
-                CodeAction.Create("Generate record constructor", c => MakeUppercaseAsync(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor", c => GenerateCode(context.Document, declaration, c)),
                 diagnostic);
         }
 
         private static readonly SyntaxTriviaList EmptyTrivia = TriviaList();
         private static readonly SyntaxToken PublicToken = Token(SyntaxKind.PublicKeyword);
 
-        private ConstructorDeclarationSyntax GenerateConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames)
+        private static ConstructorDeclarationSyntax GenerateConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames)
         {
             var props = propertyNames.Select(p => new Property(p)).ToArray();
 
@@ -60,7 +61,6 @@ namespace RecordConstructorGenerator
         private static SyntaxTriviaList GenerateDocComment(IEnumerable<IdentifierName> props)
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine();
             sb.AppendLine("/// <summary>" + SyntaxExtensions.RecordComment + "</summary>");
             foreach (var p in props)
                 sb.AppendLine($"/// <param name=\"{p.Lower}\"><see cref=\"{p.Upper}\"/></param>");
@@ -69,29 +69,68 @@ namespace RecordConstructorGenerator
             return docComment;
         }
 
-        private async Task<Document> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Solution> GenerateCode(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
+
+            var newTypeDecl = typeDecl.AddPartialModifier();
+
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+            var newRoolt = root.ReplaceNode(typeDecl, newTypeDecl)
+                .WithAdditionalAnnotations(Formatter.Annotation);
 
+            document = document.WithSyntaxRoot(newRoolt);
+
+            var newDocument = await AddNewDocument(document, typeDecl, cancellationToken);
+            return newDocument.Project.Solution;
+        }
+
+        private static async Task<Document> AddNewDocument(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
+            var newRoot = await GeneratePartialDeclaration(document, typeDecl, cancellationToken);
+
+            var name = typeDecl.Identifier.Text;
+            var generatedName = name + ".RecordConstructor.cs";
+
+            var project = document.Project;
+
+            var existed = project.Documents.FirstOrDefault(d => d.Name == generatedName);
+            if (existed != null)
+                project = project.RemoveDocument(existed.Id);
+
+            var newDocument = project.AddDocument(generatedName, newRoot, document.Folders);
+            return newDocument;
+        }
+
+        private static async Task<CompilationUnitSyntax> GeneratePartialDeclaration(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
             var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
-            var recordCtor = typeDecl.GetRecordConstructor();
-            TypeDeclarationSyntax newDecl;
+            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
 
-            if (recordCtor != null)
+            var name = typeDecl.Identifier.Text;
+            var newTypeDecl = typeDecl.GetPartialTypeDelaration()
+                .AddMembers(newCtor)
+                .WithAdditionalAnnotations(Formatter.Annotation);
+
+            var ns = typeDecl.FirstAncestorOrSelf<NamespaceDeclarationSyntax>()?.Name.WithoutTrivia().GetText().ToString();
+
+            MemberDeclarationSyntax topDecl;
+            if (ns != null)
             {
-                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
-                newDecl = typeDecl.ReplaceNode(recordCtor, newCtor);
+                topDecl = NamespaceDeclaration(IdentifierName(ns))
+                    .AddMembers(newTypeDecl)
+                    .WithAdditionalAnnotations(Formatter.Annotation);
             }
             else
             {
-                var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
-                newDecl = typeDecl.InsertNodesAfter(typeDecl.Members.Last(), new[] { newCtor });
+                topDecl = newTypeDecl;
             }
 
-            var newRoolt = root.ReplaceNode(typeDecl, newDecl)
-                .WithAdditionalAnnotations(Formatter.Annotation);
+            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
 
-            return document.WithSyntaxRoot(newRoolt);
+            return CompilationUnit().AddUsings(root.Usings.ToArray())
+                .AddMembers(topDecl)
+                .WithTrailingTrivia(CarriageReturnLineFeed)
+                .WithAdditionalAnnotations(Formatter.Annotation);
         }
     }
 }
