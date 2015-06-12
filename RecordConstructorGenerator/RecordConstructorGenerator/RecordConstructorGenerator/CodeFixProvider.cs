@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -71,7 +70,13 @@ namespace RecordConstructorGenerator
 
         private async Task<Solution> GenerateCode(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
+            document = await AddPartialModifier(document, typeDecl, cancellationToken);
+            document = await AddNewDocument(document, typeDecl, cancellationToken);
+            return document.Project.Solution;
+        }
 
+        private static async Task<Document> AddPartialModifier(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
             var newTypeDecl = typeDecl.AddPartialModifier();
 
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
@@ -79,9 +84,7 @@ namespace RecordConstructorGenerator
                 .WithAdditionalAnnotations(Formatter.Annotation);
 
             document = document.WithSyntaxRoot(newRoolt);
-
-            var newDocument = await AddNewDocument(document, typeDecl, cancellationToken);
-            return newDocument.Project.Solution;
+            return document;
         }
 
         private static async Task<Document> AddNewDocument(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
