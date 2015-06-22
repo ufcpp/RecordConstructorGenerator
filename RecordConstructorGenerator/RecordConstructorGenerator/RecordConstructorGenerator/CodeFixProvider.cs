@@ -34,7 +34,11 @@ namespace RecordConstructorGenerator
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
-                CodeAction.Create("Generate record constructor", c => GenerateCode(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor (in another partial file)", c => GenerateCodePartial(context.Document, declaration, c)),
+                diagnostic);
+
+            context.RegisterCodeFix(
+                CodeAction.Create("Generate record constructor (in the same file)", c => GenerateCodeSameFile(context.Document, declaration, c)),
                 diagnostic);
         }
 
@@ -68,7 +72,21 @@ namespace RecordConstructorGenerator
             return docComment;
         }
 
-        private async Task<Solution> GenerateCode(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Document> GenerateCodeSameFile(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        {
+            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
+            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+
+            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+            var newTypeDecl = typeDecl.AddMembers(newCtor);
+
+            var newRoot = root.ReplaceNode(typeDecl, newTypeDecl);
+
+            document = document.WithSyntaxRoot(newRoot);
+            return document;
+        }
+
+        private async Task<Solution> GenerateCodePartial(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
         {
             document = await AddPartialModifier(document, typeDecl, cancellationToken);
             document = await AddNewDocument(document, typeDecl, cancellationToken);
@@ -97,11 +115,8 @@ namespace RecordConstructorGenerator
             var project = document.Project;
 
             var existed = project.Documents.FirstOrDefault(d => d.Name == generatedName);
-            if (existed != null)
-                project = project.RemoveDocument(existed.Id);
-
-            var newDocument = project.AddDocument(generatedName, newRoot, document.Folders);
-            return newDocument;
+            if (existed != null) return existed.WithSyntaxRoot(newRoot);
+            else return project.AddDocument(generatedName, newRoot, document.Folders);
         }
 
         private static async Task<CompilationUnitSyntax> GeneratePartialDeclaration(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
