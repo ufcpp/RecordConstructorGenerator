@@ -17,7 +17,7 @@ namespace RecordConstructorGenerator
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RecordConstructorGeneratorCodeFixProvider)), Shared]
     public class RecordConstructorGeneratorCodeFixProvider : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(NoRecordConstructor.DiagnosticId, NoAssignmentInRecordConstructor.DiagnosticId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(NoAssignmentInRecordConstructor.DiagnosticId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -110,7 +110,7 @@ namespace RecordConstructorGenerator
             var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
 
             var name = typeDecl.Identifier.Text;
-            var newTypeDecl = typeDecl.GetPartialTypeDelaration()
+            var newTypeDecl = typeDecl.CreatePartialTypeDelaration()
                 .AddMembers(newCtor)
                 .WithAdditionalAnnotations(Formatter.Annotation);
 

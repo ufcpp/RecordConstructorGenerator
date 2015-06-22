@@ -13,6 +13,7 @@ namespace RecordConstructorGenerator.Test
         {
             VerifyCSharpByConvention("NoDiagnostics1");
             VerifyCSharpByConvention("NoDiagnostics2");
+            VerifyCSharpByConvention("NoDiagnostics3");
         }
 
         [TestMethod]

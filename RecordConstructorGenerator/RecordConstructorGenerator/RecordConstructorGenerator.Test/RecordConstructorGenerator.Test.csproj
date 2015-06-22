@@ -123,6 +123,10 @@
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source\Point.RecordConstructor.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\IPoint.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\PointBase.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\MutablePoint.cs" />
     <Compile Include="Verifiers\CodeFixVerifier.cs" />
     <Compile Include="Verifiers\ConventionCodeFixVerifier.cs" />
     <Compile Include="Verifiers\DiagnosticVerifier.cs" />
@@ -153,7 +157,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Expected_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" />
+      <UserProperties DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Expected_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Diagnostic_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

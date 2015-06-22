@@ -1,10 +1,10 @@
 ﻿[
-    {
-        "id": "NoAssignmentInRecordConstructor",
-        "sevirity": "Info",
-        "line": 5,
-        "column": 9,
-        "path":  "Point.cs",
-        "message-args": [ "Name" ]
-    }
+  {
+    "id": "RCNoAssignment",
+    "sevirity": "Info",
+    "line": 5,
+    "column": 9,
+    "path": "Point.cs",
+    "message-args": [ "Name" ]
+  }
 ]

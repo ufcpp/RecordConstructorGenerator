@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="2.0" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
+        <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="2.0.3" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
         <DisplayName>Record constructor generator</DisplayName>
         <Description xml:space="preserve">Code Fix for a record (immutable class/struct) constructor generated from get-only properties.</Description>
         <MoreInfo>https://github.com/ufcpp/RecordConstructorGenerator/</MoreInfo>
         <License>LICENSE.txt</License>
-        <ReleaseNotes>Generate the constructor in a separate partial file.</ReleaseNotes>
+        <ReleaseNotes>bug fix</ReleaseNotes>
         <Tags>record type,immutable type,code generator,analyzers</Tags>
     </Metadata>
     <Installation>

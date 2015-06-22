@@ -88,6 +88,7 @@ namespace TestHelper
         private IEnumerable<DiagnosticResult> ReadResultsFromFolder(string testName)
         {
             var diagnosticPath = Path.Combine(DataSourcePath, testName, "Diagnostic");
+            if (!Directory.Exists(diagnosticPath)) yield break;
 
             foreach (var file in Directory.GetFiles(diagnosticPath, "*.json"))
             {
@@ -108,6 +109,7 @@ namespace TestHelper
         private Dictionary<string, string> ReadExpectedSources(string testName)
         {
             var expectedPath = Path.Combine(DataSourcePath, testName, "Expected");
+            if (!Directory.Exists(expectedPath)) return null;
             return ReadFiles(expectedPath);
         }
 

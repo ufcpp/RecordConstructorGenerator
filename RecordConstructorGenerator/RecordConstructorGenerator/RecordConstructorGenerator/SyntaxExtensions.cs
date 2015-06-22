@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using System.Collections.Generic;
 
 namespace RecordConstructorGenerator
 {
@@ -21,15 +22,24 @@ namespace RecordConstructorGenerator
 
         public static bool IsGetOnlyAuto(this PropertyDeclarationSyntax p)
         {
-            var accessor = p.AccessorList?.Accessors.SingleOrDefault();
+            if (p.AccessorList == null) return false;
+            if (p.AccessorList.Accessors.Count != 1) return false;
+
+            var accessor = p.AccessorList.Accessors[0];
 
             return accessor != null
                 && accessor.Keyword.IsKind(SyntaxKind.GetKeyword)
                 && accessor.Body == null
-                && p.Initializer == null;
+                && p.Initializer == null
+                && !p.Modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword));
         }
 
-        public static TypeDeclarationSyntax GetPartialTypeDelaration(this TypeDeclarationSyntax typeDecl)
+        /// <summary>
+        /// Creates <see cref="TypeDeclarationSyntax"/> with the same identifier as <paramref name="typeDecl"/>, a partial modifier and an empty body.
+        /// </summary>
+        /// <param name="typeDecl"></param>
+        /// <returns></returns>
+        public static TypeDeclarationSyntax CreatePartialTypeDelaration(this TypeDeclarationSyntax typeDecl)
         {
             var name = typeDecl.Identifier.Text;
 
@@ -48,6 +58,28 @@ partial struct {name}
 {{
 }}
 ").GetRoot().ChildNodes().OfType<StructDeclarationSyntax>().First();
+            }
+        }
+
+        /// <summary>
+        /// Finds all <see cref="TypeDeclarationSyntax"/>s which have the same identifier as <paramref name="typeDecl"/> from <paramref name="compilation"/>.
+        /// </summary>
+        /// <param name="typeDecl"></param>
+        /// <param name="compilation"></param>
+        /// <returns></returns>
+        public static IEnumerable<TypeDeclarationSyntax> FindPartialTypeDelarations(this TypeDeclarationSyntax typeDecl, Compilation compilation)
+        {
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                var root = tree.GetRoot();
+                var types = root.DescendantNodes(n => !(n is TypeDeclarationSyntax))
+                    .OfType<TypeDeclarationSyntax>()
+                    .Where(n => n.Identifier.Text == typeDecl.Identifier.Text);
+
+                foreach (var t in types)
+                {
+                    yield return t;
+                }
             }
         }
 
