@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -57,20 +56,18 @@ namespace TestHelper
         /// <param name="testName"></param>
         private void VerifyCSharpByConventionV1(string testName)
         {
+            var sources = new Dictionary<string, string>();
             var sourcePath = Path.Combine(DataSourcePath, testName, "Source.cs");
-            var source = File.ReadAllText(sourcePath);
+            if (File.Exists(sourcePath)) { sources.Add(Path.GetFileName(sourcePath), File.ReadAllText(sourcePath)); }
 
             var resultsPath = Path.Combine(DataSourcePath, testName, "Results.json");
             var expectedResults = ReadResults(resultsPath).ToArray();
 
-            var newSourcePath = Path.Combine(DataSourcePath, testName, "NewSource.cs");
-            if (File.Exists(newSourcePath))
-            {
-                var newSource = File.ReadAllText(newSourcePath);
+            var expectedSources = new Dictionary<string, string>();
+            var expectedSourcePath = Path.Combine(DataSourcePath, testName, "NewSource.cs");
+            if (File.Exists(expectedSourcePath)) { expectedSources.Add(Path.GetFileName(sourcePath), File.ReadAllText(expectedSourcePath)); }
 
-                VerifyCSharpDiagnostic(source, expectedResults);
-                VerifyCSharpFix(source, newSource);
-            }
+            VerifyCSharp(sources, expectedResults, expectedSources);
         }
 
         #endregion
@@ -88,7 +85,9 @@ namespace TestHelper
         private IEnumerable<DiagnosticResult> ReadResultsFromFolder(string testName)
         {
             var diagnosticPath = Path.Combine(DataSourcePath, testName, "Diagnostic");
-            if (!Directory.Exists(diagnosticPath)) yield break;
+
+            if (!Directory.Exists(diagnosticPath))
+                yield break;
 
             foreach (var file in Directory.GetFiles(diagnosticPath, "*.json"))
             {
@@ -109,12 +108,14 @@ namespace TestHelper
         private Dictionary<string, string> ReadExpectedSources(string testName)
         {
             var expectedPath = Path.Combine(DataSourcePath, testName, "Expected");
-            if (!Directory.Exists(expectedPath)) return null;
             return ReadFiles(expectedPath);
         }
 
         private static Dictionary<string, string> ReadFiles(string sourcePath)
         {
+            if (!Directory.Exists(sourcePath))
+                return null; ;
+
             var sources = new Dictionary<string, string>();
 
             foreach (var file in Directory.GetFiles(sourcePath, "*.cs"))
@@ -206,68 +207,22 @@ namespace TestHelper
         private static Diagnostic[] GetDiagnostics(Project project, DiagnosticAnalyzer analyzer)
         {
             var compilationWithAnalyzers = project.GetCompilationAsync().Result.WithAnalyzers(ImmutableArray.Create(analyzer));
-            var diagnostics = compilationWithAnalyzers.GetAllDiagnosticsAsync().Result;
+            var diagnostics = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result;
             return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
         }
-
-        #endregion
-        #region read expected results from JSON file
-
-        private IEnumerable<DiagnosticResult> ReadResults(string path)
-        {
-            if (!File.Exists(path)) yield break;
-
-            var results = JsonConvert.DeserializeObject<Result[]>(File.ReadAllText(path));
-
-            var analyzer = GetCSharpDiagnosticAnalyzer().SupportedDiagnostics.ToDictionary(x => x.Id);
-
-            foreach (var r in results)
-            {
-                var diag = analyzer[r.Id];
-                yield return new DiagnosticResult
-                {
-                    Id = r.Id,
-                    Message = r.MessageArgs == null ? diag.MessageFormat.ToString() : string.Format(diag.MessageFormat.ToString(), (object[])r.MessageArgs),
-                    Severity = r.Sevirity,
-                    Locations = new[] { new DiagnosticResultLocation(r.Path ?? "Test0.cs", r.Line, r.Column) },
-                };
-            }
-        }
-
-        private class Result
-        {
-            [JsonProperty(PropertyName = "id")]
-            public string Id { get; set; }
-
-            [JsonProperty(PropertyName = "sevirity")]
-            public DiagnosticSeverity Sevirity { get; set; }
-
-            [JsonProperty(PropertyName = "line")]
-            public int Line { get; set; }
-
-            [JsonProperty(PropertyName = "column")]
-            public int Column { get; set; }
-
-            [JsonProperty(PropertyName = "path")]
-            public string Path { get; set; }
-
-            [JsonProperty(PropertyName = "message-args")]
-            public string[] MessageArgs { get; set; }
-        }
-
-        #endregion
-        #region Ver. 2
 
         protected virtual IEnumerable<MetadataReference> References
         {
             get
             {
-                yield return MetadataReference.CreateFromAssembly(typeof(object).Assembly);
-                yield return MetadataReference.CreateFromAssembly(typeof(Enumerable).Assembly);
-                yield return MetadataReference.CreateFromAssembly(typeof(CSharpCompilation).Assembly);
-                yield return MetadataReference.CreateFromAssembly(typeof(Compilation).Assembly);
+                yield return MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+                yield return MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
+                yield return MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
+                yield return MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
             }
         }
+
+        protected virtual CSharpCompilationOptions CompilationOptions => new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
         protected Project CreateProject(Dictionary<string, string> sources)
         {
@@ -295,8 +250,53 @@ namespace TestHelper
             }
 
             var project = solution.GetProject(projectId)
-                .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                .WithCompilationOptions(CompilationOptions);
             return project;
+        }
+
+        #endregion
+        #region read expected results from JSON file
+
+        private IEnumerable<DiagnosticResult> ReadResults(string path)
+        {
+            if (!File.Exists(path)) yield break;
+
+            var results = JsonConvert.DeserializeObject<Result[]>(File.ReadAllText(path));
+
+            var analyzer = GetCSharpDiagnosticAnalyzer().SupportedDiagnostics.ToDictionary(x => x.Id);
+
+            foreach (var r in results)
+            {
+                var diag = analyzer[r.Id];
+                yield return new DiagnosticResult
+                {
+                    Id = r.Id,
+                    Message = r.MessageArgs == null ? diag.MessageFormat.ToString() : string.Format(diag.MessageFormat.ToString(), (object[])r.MessageArgs),
+                    Severity = r.Sevirity,
+                    Locations = new[] { new DiagnosticResultLocation(r.Path ?? "Source.cs", r.Line, r.Column) },
+                };
+            }
+        }
+
+        private class Result
+        {
+            [JsonProperty(PropertyName = "id")]
+            public string Id { get; set; }
+
+            [JsonProperty(PropertyName = "sevirity")]
+            public DiagnosticSeverity Sevirity { get; set; }
+
+            [JsonProperty(PropertyName = "line")]
+            public int Line { get; set; }
+
+            [JsonProperty(PropertyName = "column")]
+            public int Column { get; set; }
+
+            [JsonProperty(PropertyName = "path")]
+            public string Path { get; set; }
+
+            [JsonProperty(PropertyName = "message-args")]
+            public string[] MessageArgs { get; set; }
         }
 
         #endregion
