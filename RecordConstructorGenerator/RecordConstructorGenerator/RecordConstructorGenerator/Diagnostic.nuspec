@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>RecordConstructorGenerator</id>
-    <version>3.0.0.0</version>
+    <version>3.0.1.0</version>
     <title>RecordConstructorGenerator</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/ufcpp/RecordConstructorGenerator/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Code Fix for a record (immutable class/struct) constructor generated from get-only properties</description>
-    <releaseNotes>Upgrade ot Microsoft.CodeAnalysis RC3</releaseNotes>
+    <releaseNotes>Upgrade Microsoft.CodeAnalysis to 1.0.0., ImmutableCollections to 1.1.37</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <tags>record type, immutable type, code generator, analyzers</tags>
     <frameworkAssemblies>
