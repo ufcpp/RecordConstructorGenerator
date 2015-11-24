@@ -6,7 +6,7 @@ namespace TestHelper
     /// <summary>
     /// Location where the diagnostic appears, as determined by path, line number, and column number.
     /// </summary>
-    public struct DiagnosticResultLocation
+    public struct DiagnosticResultLocation : IEquatable<DiagnosticResultLocation>
     {
         public DiagnosticResultLocation(string path, int line, int column)
         {
@@ -27,6 +27,14 @@ namespace TestHelper
         public string Path;
         public int Line;
         public int Column;
+
+        public DiagnosticResultLocation(Location location)
+            : this(location.SourceTree.FilePath, location.GetMappedLineSpan().StartLinePosition.Line + 1, location.GetMappedLineSpan().StartLinePosition.Character + 1)
+        {
+        }
+
+        public bool Equals(DiagnosticResultLocation other)
+            => Path == other.Path && Line == other.Line && Column == other.Column;
     }
 
     /// <summary>

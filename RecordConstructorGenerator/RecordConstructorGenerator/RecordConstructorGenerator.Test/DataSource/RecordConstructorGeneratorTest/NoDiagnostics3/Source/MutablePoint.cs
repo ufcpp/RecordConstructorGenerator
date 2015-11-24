@@ -2,9 +2,14 @@
 {
     class Point2
     {
-        public int X { get; set; }
+        public int X { get; set; } = 0;
 
         public int Y { get; set; }
+
+        public Point2()
+        {
+            Y = 0;
+        }
     }
 
     class Point3

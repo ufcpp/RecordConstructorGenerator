@@ -34,18 +34,22 @@ namespace RecordConstructorGenerator
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
+            // property
             var p = context.Symbol as IPropertySymbol;
             if (p == null) return;
 
             var ps = p.DeclaringSyntaxReferences.First().GetSyntax() as PropertyDeclarationSyntax;
             if (ps == null) return;
 
-            if (!ps.IsGetOnlyAuto()) return;
+            // which is auto-implementend
+            if (!ps.IsAutoProperty()) return;
 
+            // in class or struct, not in interface
             var ts = ps.FirstAncestorOrSelf<TypeDeclarationSyntax>();
             if (ts == null) return;
             if (ts.IsKind(SyntaxKind.InterfaceDeclaration)) return;
 
+            // without any assignment
             var assigned = ts.FindPartialTypeDelarations(context.Compilation)
                 .SelectMany(t => t.DescendantNodes(n => !n.IsKind(SyntaxKind.SimpleAssignmentExpression)))
                 .OfType<AssignmentExpressionSyntax>()

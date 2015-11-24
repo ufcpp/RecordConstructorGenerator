@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>RecordConstructorGenerator</id>
-    <version>3.0.1.0</version>
+    <version>3.1.1</version>
     <title>RecordConstructorGenerator</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/ufcpp/RecordConstructorGenerator/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Code Fix for a record (immutable class/struct) constructor generated from get-only properties</description>
-    <releaseNotes>Upgrade Microsoft.CodeAnalysis to 1.0.0., ImmutableCollections to 1.1.37</releaseNotes>
+    <releaseNotes>Add code-fix options to generate without optional parameters</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <tags>record type, immutable type, code generator, analyzers</tags>
     <frameworkAssemblies>
@@ -18,7 +18,8 @@
     </frameworkAssemblies>
   </metadata>
   <files>
-    <file src="*.dll" target="tools\analyzers\" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*" />
-    <file src="tools\*.ps1" target="tools\" />
+      <file src="*.dll" target="tools\analyzers\C#" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*" />
+      <file src="*.dll" target="analyzers\C#" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*;**\System.Composition.*" />
+      <file src="tools\*.ps1" target="tools\" />
   </files>
 </package>

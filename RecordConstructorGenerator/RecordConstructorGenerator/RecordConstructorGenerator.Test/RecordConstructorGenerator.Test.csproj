@@ -96,6 +96,12 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected0\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected3\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected3\Point.RecordConstructor.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected0\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected2\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected4\Point.cs" />
     <Compile Include="Helpers\CodeFixVerifier.Helper.cs" />
     <Compile Include="Verifiers\CodeFixVerifier.cs" />
     <Compile Include="Verifiers\ConventionCodeFixVerifier.cs" />
@@ -107,14 +113,14 @@
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Diagnostic\Results.json" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Source\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics2\Source.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected\Point.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected\Point.RecordConstructor.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected1\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected1\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Source\Point.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected\Point.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected\Point.RecordConstructor.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected3\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected3\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source\Point.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected\Point.cs" />
-    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected\Point.RecordConstructor.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected3\Point.cs" />
+    <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Expected3\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Source\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\NoDiagnostics3\Source\IPoint.cs" />
@@ -146,7 +152,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Expected_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Diagnostic_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" />
+      <UserProperties DataSource_2RecordConstructorGeneratorTest_2TypicalUsage_2Diagnostic_2Results_1json__JSONSchema="..\..\..\result-schema-v2.json" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

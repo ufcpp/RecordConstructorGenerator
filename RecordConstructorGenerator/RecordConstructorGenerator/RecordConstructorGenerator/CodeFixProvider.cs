@@ -33,24 +33,41 @@ namespace RecordConstructorGenerator
             var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
 
             // Register a code action that will invoke the fix.
+
             context.RegisterCodeFix(
-                CodeAction.Create("Generate record constructor (in another partial file)", c => GenerateCodePartial(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor", c => GenerateCodeSameFile(context.Document, declaration, false, c), equivalenceKey: "SameFile"),
                 diagnostic);
 
             context.RegisterCodeFix(
-                CodeAction.Create("Generate record constructor (in the same file)", c => GenerateCodeSameFile(context.Document, declaration, c)),
+                CodeAction.Create("Generate record constructor (partial)", c => GenerateCodePartial(context.Document, declaration, false, c), equivalenceKey: "AnotherPartialFile"),
+                diagnostic);
+
+            context.RegisterCodeFix(
+                CodeAction.Create("Generate record constructor (with optional params)", c => GenerateCodeSameFile(context.Document, declaration, true, c), equivalenceKey: "SameFileOpt"),
+                diagnostic);
+
+            context.RegisterCodeFix(
+                CodeAction.Create("Generate record constructor (partial with optional params)", c => GenerateCodePartial(context.Document, declaration, true, c), equivalenceKey: "AnotherPartialFileOpt"),
                 diagnostic);
         }
 
         private static readonly SyntaxTriviaList EmptyTrivia = TriviaList();
         private static readonly SyntaxToken PublicToken = Token(SyntaxKind.PublicKeyword);
 
-        private static ConstructorDeclarationSyntax GenerateConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames)
+        public static ParameterSyntax GetParameter(string typeName, string identifier)
+            => Parameter(
+                    default(SyntaxList<AttributeListSyntax>),
+                    default(SyntaxTokenList),
+                    ParseTypeName(typeName),
+                    Identifier(identifier),
+                    null);
+
+        private static ConstructorDeclarationSyntax GenerateConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames, bool isOptional)
         {
             var props = propertyNames.Select(p => new Property(p)).ToArray();
 
             var docComment = GenerateDocComment(props.Select(p => p.Name));
-            var parameterList = ParameterList().AddParameters(props.Select(p => p.ToParameter()).ToArray());
+            var parameterList = ParameterList().AddParameters(props.Select(p => p.ToParameter(isOptional)).ToArray());
             var body = Block().AddStatements(props.Select(p => p.ToAssignment()).ToArray());
 
             return ConstructorDeclaration(typeName)
@@ -61,10 +78,11 @@ namespace RecordConstructorGenerator
                 .WithAdditionalAnnotations(Formatter.Annotation);
         }
 
-        private static SyntaxTriviaList GenerateDocComment(IEnumerable<IdentifierName> props)
+        private static SyntaxTriviaList GenerateDocComment(IEnumerable<IdentifierName> props, bool isCopyConstructor = false)
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("/// <summary>" + SyntaxExtensions.RecordComment + "</summary>");
+            var comment = isCopyConstructor ? SyntaxExtensions.CopyComment : SyntaxExtensions.RecordComment;
+            sb.AppendLine("/// <summary>" + comment + "</summary>");
             foreach (var p in props)
                 sb.AppendLine($"/// <param name=\"{p.Lower}\"><see cref=\"{p.Upper}\"/></param>");
 
@@ -72,10 +90,10 @@ namespace RecordConstructorGenerator
             return docComment;
         }
 
-        private async Task<Document> GenerateCodeSameFile(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Document> GenerateCodeSameFile(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
         {
-            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
-            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsAutoProperty());
+            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties, isOptional);
 
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
             var newTypeDecl = typeDecl.AddMembers(newCtor);
@@ -86,10 +104,10 @@ namespace RecordConstructorGenerator
             return document;
         }
 
-        private async Task<Solution> GenerateCodePartial(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Solution> GenerateCodePartial(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
         {
             document = await AddPartialModifier(document, typeDecl, cancellationToken);
-            document = await AddNewDocument(document, typeDecl, cancellationToken);
+            document = await AddNewDocument(document, typeDecl, isOptional, cancellationToken);
             return document.Project.Solution;
         }
 
@@ -105,9 +123,9 @@ namespace RecordConstructorGenerator
             return document;
         }
 
-        private static async Task<Document> AddNewDocument(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private static async Task<Document> AddNewDocument(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
         {
-            var newRoot = await GeneratePartialDeclaration(document, typeDecl, cancellationToken);
+            var newRoot = await GeneratePartialDeclaration(document, typeDecl, isOptional, cancellationToken);
 
             var name = typeDecl.Identifier.Text;
             var generatedName = name + ".RecordConstructor.cs";
@@ -119,10 +137,10 @@ namespace RecordConstructorGenerator
             else return project.AddDocument(generatedName, newRoot, document.Folders);
         }
 
-        private static async Task<CompilationUnitSyntax> GeneratePartialDeclaration(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private static async Task<CompilationUnitSyntax> GeneratePartialDeclaration(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
         {
-            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsGetOnlyAuto());
-            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties);
+            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsAutoProperty());
+            var newCtor = GenerateConstructor(typeDecl.Identifier.Text, properties, isOptional);
 
             var name = typeDecl.Identifier.Text;
             var newTypeDecl = typeDecl.CreatePartialTypeDelaration()
