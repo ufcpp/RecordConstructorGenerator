@@ -10,6 +10,7 @@ namespace RecordConstructorGenerator
     public static class SyntaxExtensions
     {
         public const string RecordComment = "Record Constructor";
+        public const string CopyComment = "Copy Constructor";
 
         public static ConstructorDeclarationSyntax GetRecordConstructor(this TypeDeclarationSyntax typeDecl)
             => (ConstructorDeclarationSyntax)typeDecl.Members
@@ -19,6 +20,15 @@ namespace RecordConstructorGenerator
             => m.HasLeadingTrivia
                 && m.GetLeadingTrivia().Any(trivia =>
                     trivia.IsKind(SyntaxKind.SingleLineDocumentationCommentTrivia) && trivia.ToString().Contains(RecordComment));
+
+        public static bool IsAutoProperty(this PropertyDeclarationSyntax p)
+        {
+            if (p.AccessorList == null) return false;
+
+            return p.AccessorList.Accessors.All(a => a != null && a.Body == null)
+                && p.Initializer == null
+                && !p.Modifiers.Any(m => m.IsKind(SyntaxKind.AbstractKeyword));
+        }
 
         public static bool IsGetOnlyAuto(this PropertyDeclarationSyntax p)
         {
@@ -124,12 +134,29 @@ partial struct {name}
             _p = p;
         }
 
-        public ParameterSyntax ToParameter() => Parameter(
-            default(SyntaxList<AttributeListSyntax>),
-            default(SyntaxTokenList),
-            Type,
-            Identifier(Name.Lower),
-            EqualsValueClause(DefaultExpression(Type)));
+        public ParameterSyntax ToParameter(bool isOptional)
+            => isOptional ?
+                Parameter(
+                    default(SyntaxList<AttributeListSyntax>),
+                    default(SyntaxTokenList),
+                    Type,
+                    Identifier(Name.Lower),
+                    EqualsValueClause(DefaultExpression(Type)))
+            :
+                Parameter(
+                    default(SyntaxList<AttributeListSyntax>),
+                    default(SyntaxTokenList),
+                    Type,
+                    Identifier(Name.Lower),
+                    null)
+            ;
+
+        public ExpressionStatementSyntax ToAssignment(string instanceName) => ExpressionStatement(
+            AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                IdentifierName(Name.Upper),
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName(instanceName),
+                    IdentifierName(Name.Original))));
 
         public ExpressionStatementSyntax ToAssignment() => ExpressionStatement(
             AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
@@ -139,12 +166,13 @@ partial struct {name}
 
     public struct IdentifierName
     {
+        public string Original { get; }
         public string Lower { get; }
         public string Upper { get; }
 
-        private IdentifierName(string lower, string upper) { Lower = lower; Upper = upper; }
+        private IdentifierName(string original, string lower, string upper) { Original = original; Lower = lower; Upper = upper; }
 
-        public static IdentifierName FromUpper(string upper) => new IdentifierName(char.ToLower(upper[0]) + upper.Substring(1, upper.Length - 1), upper);
-        public static IdentifierName FromLower(string lower) => new IdentifierName(lower, char.ToUpper(lower[0]) + lower.Substring(1, lower.Length - 1));
+        public static IdentifierName FromUpper(string upper) => new IdentifierName(upper, char.ToLower(upper[0]) + upper.Substring(1, upper.Length - 1), upper);
+        public static IdentifierName FromLower(string lower) => new IdentifierName(lower, lower, char.ToUpper(lower[0]) + lower.Substring(1, lower.Length - 1));
     }
 }

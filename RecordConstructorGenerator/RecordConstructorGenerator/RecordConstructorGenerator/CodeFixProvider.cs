@@ -49,10 +49,32 @@ namespace RecordConstructorGenerator
             context.RegisterCodeFix(
                 CodeAction.Create("Generate record constructor (partial with optional params)", c => GenerateCodePartial(context.Document, declaration, true, c), equivalenceKey: "AnotherPartialFileOpt"),
                 diagnostic);
+
+            context.RegisterCodeFix(
+                CodeAction.Create("Generate copy constructor", c => GenerateCodeForCopyConstructor(context.Document, declaration, false, c), equivalenceKey: "SameFileCopy"),
+                diagnostic);
         }
 
         private static readonly SyntaxTriviaList EmptyTrivia = TriviaList();
         private static readonly SyntaxToken PublicToken = Token(SyntaxKind.PublicKeyword);
+
+        private static ConstructorDeclarationSyntax GenerateCopyConstructor(string typeName, IEnumerable<PropertyDeclarationSyntax> propertyNames, bool isOptional)
+        {
+            var props = propertyNames.Select(p => new Property(p)).ToArray();
+
+            var identifier = "obj";
+
+            var docComment = GenerateDocComment(props.Select(p => p.Name), true);
+            var parameterList = ParameterList().AddParameters(GetParameter(typeName, identifier));
+            var body = Block().AddStatements(props.Select(p => p.ToAssignment(identifier)).ToArray());
+
+            return ConstructorDeclaration(typeName)
+                .WithModifiers(SyntaxTokenList.Create(PublicToken))
+                .WithParameterList(parameterList)
+                .WithLeadingTrivia(docComment)
+                .WithBody(body)
+                .WithAdditionalAnnotations(Formatter.Annotation);
+        }
 
         public static ParameterSyntax GetParameter(string typeName, string identifier)
             => Parameter(
@@ -88,6 +110,20 @@ namespace RecordConstructorGenerator
 
             var docComment = ParseLeadingTrivia(sb.ToString());
             return docComment;
+        }
+
+        private async Task<Document> GenerateCodeForCopyConstructor(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
+        {
+            var properties = typeDecl.Members.OfType<PropertyDeclarationSyntax>().Where(p => p.IsAutoProperty());
+            var newCtor = GenerateCopyConstructor(typeDecl.Identifier.Text, properties, isOptional);
+
+            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false) as CompilationUnitSyntax;
+            var newTypeDecl = typeDecl.AddMembers(newCtor);
+
+            var newRoot = root.ReplaceNode(typeDecl, newTypeDecl);
+
+            document = document.WithSyntaxRoot(newRoot);
+            return document;
         }
 
         private async Task<Document> GenerateCodeSameFile(Document document, TypeDeclarationSyntax typeDecl, bool isOptional, CancellationToken cancellationToken)
