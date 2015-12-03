@@ -96,16 +96,16 @@
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\CodeFixVerifier.Helper.cs" />
+    <Compile Include="Verifiers\CodeFixVerifier.cs" />
+    <Compile Include="Verifiers\DiagnosticVerifier.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Expected0\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected3\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected3\Point.RecordConstructor.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected0\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected2\Point.cs" />
     <None Include="DataSource\RecordConstructorGeneratorTest\TypicalUsage\Expected4\Point.cs" />
-    <Compile Include="Helpers\CodeFixVerifier.Helper.cs" />
-    <Compile Include="Verifiers\CodeFixVerifier.cs" />
     <Compile Include="Verifiers\ConventionCodeFixVerifier.cs" />
-    <Compile Include="Verifiers\DiagnosticVerifier.cs" />
     <None Include="app.config" />
     <None Include="DataSource\RecordConstructorGeneratorTest\AddNewProperty\Diagnostic\Results.json" />
     <None Include="DataSource\RecordConstructorGeneratorTest\CanBeUsedForStruct\Diagnostic\Results.json" />
