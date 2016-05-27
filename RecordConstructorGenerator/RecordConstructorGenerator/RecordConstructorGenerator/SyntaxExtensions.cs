@@ -140,14 +140,14 @@ partial struct {name}
                     default(SyntaxList<AttributeListSyntax>),
                     default(SyntaxTokenList),
                     Type,
-                    Identifier(Name.Lower),
+                    Identifier(GenerateLowercaseIdentifierName(Name.Lower)),
                     EqualsValueClause(DefaultExpression(Type)))
             :
                 Parameter(
                     default(SyntaxList<AttributeListSyntax>),
                     default(SyntaxTokenList),
                     Type,
-                    Identifier(Name.Lower),
+                    Identifier(GenerateLowercaseIdentifierName(Name.Lower)),
                     null)
             ;
 
@@ -161,7 +161,10 @@ partial struct {name}
         public ExpressionStatementSyntax ToAssignment() => ExpressionStatement(
             AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                 IdentifierName(Name.Upper),
-                IdentifierName(Name.Lower)));
+                IdentifierName(GenerateLowercaseIdentifierName(Name.Lower))));
+
+        private string GenerateLowercaseIdentifierName(string name) =>
+            SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
     }
 
     public struct IdentifierName
