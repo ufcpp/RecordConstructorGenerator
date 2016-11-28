@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="3.3.0" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
+    <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="4.0.0" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
     <DisplayName>Record constructor generator</DisplayName>
     <Description xml:space="preserve">Code Fix for a record (immutable class/struct) constructor generated from get-only properties.</Description>
     <MoreInfo>https://github.com/ufcpp/RecordConstructorGenerator/</MoreInfo>
     <License>LICENSE.txt</License>
-    <ReleaseNotes>@-escaping keywords</ReleaseNotes>
+    <ReleaseNotes>Update VSIX to V3 (support VS 2017)</ReleaseNotes>
     <Tags>record type,immutable type,code generator,analyzers</Tags>
   </Metadata>
   <Installation>
@@ -19,4 +19,8 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
     <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
   </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CSharpVisualBasic.LanguageSupport" Version="[15.0,16.0)" DisplayName="CSharp VB Language Support" />
+  </Prerequisites>
 </PackageManifest>
