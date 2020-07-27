@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="4.0.1" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
-    <DisplayName>Record constructor generator</DisplayName>
-    <Description xml:space="preserve">Code Fix for a record (immutable class/struct) constructor generated from get-only properties.</Description>
-    <MoreInfo>https://github.com/ufcpp/RecordConstructorGenerator/</MoreInfo>
-    <License>LICENSE.txt</License>
-    <ReleaseNotes>Update VSIX to V3 (support VS 2017)</ReleaseNotes>
-    <Tags>record type,immutable type,code generator,analyzers</Tags>
-  </Metadata>
-  <Installation>
-    <InstallationTarget Version="[14.0,]" Id="Microsoft.VisualStudio.Pro" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-  </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
-    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
-  </Assets>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
-    <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.Compiler" Version="[15.0,17.0)" DisplayName="Roslyn Language Services" />
-  </Prerequisites>
+    <Metadata>
+        <Identity Id="RecordConstructorGenerator.Vsix..564657bf-9ef6-4fe5-96a0-ca22689ef6e4" Version="4.1.0" Language="en-US" Publisher="Nobuyuki Iwanaga"/>
+        <DisplayName>Record constructor generator</DisplayName>
+        <Description xml:space="preserve">Code Fix for a record (immutable class/struct) constructor generated from get-only properties.</Description>
+        <MoreInfo>https://github.com/ufcpp/RecordConstructorGenerator/</MoreInfo>
+        <License>LICENSE.txt</License>
+        <ReleaseNotes>(support VS 2019</ReleaseNotes>
+        <Tags>record type,immutable type,code generator,analyzers</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Version="[14.0,]" Id="Microsoft.VisualStudio.Pro" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
+        <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="RecordConstructorGenerator" Path="|RecordConstructorGenerator|"/>
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.Compiler" Version="[15.0,17.0)" DisplayName="Roslyn Language Services" />
+    </Prerequisites>
 </PackageManifest>
